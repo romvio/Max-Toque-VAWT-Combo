@@ -7,32 +7,30 @@ torques = [
     -0.050833341, -0.067811266, -0.044679159, -0.031766162, -0.023859173
 ]
 
-# Step size for spacing between samples (e.g. 8 for 120° with 15° steps)
+# Step size for spacing (e.g., 8 steps = 120° since 360°/25 = 15° per step)
 step_size = 8
+n = len(torques)
 
-# Initialize tracking variables
 best_sum = float('-inf')
 best_indices = ()
 
-# Loop through each index as the starting point
-for i in range(len(torques)):
-    idx2 = (i + step_size) % len(torques)
-    idx3 = (i + 2 * step_size) % len(torques)
+# Only loop over valid starting points to avoid duplicate angles (avoid wrapping)
+for i in range(n):
+    i2 = (i + step_size) % n
+    i3 = (i + 2 * step_size) % n
 
-    t1 = torques[i]
-    t2 = torques[idx2]
-    t3 = torques[idx3]
-    total = t1 + t2 + t3
+    # Avoid circular repeats (e.g., 0, 8, 16 and 24, 7, 15 are the same angles)
+    if i < i2 < i3:  # ensure unique order
+        total = torques[i] + torques[i2] + torques[i3]
+        if total > best_sum:
+            best_sum = total
+            best_indices = (i, i2, i3)
 
-    if total > best_sum:
-        best_sum = total
-        best_indices = (i, idx2, idx3)
-
-# Convert indices to angles
+# Convert to angles
 angles = [15 * idx for idx in best_indices]
 
-# Display the results
-print("Best torque combination:")
+# Output
+print("✅ Best torque combination:")
 print(f"Indices: {best_indices}")
 print(f"Angles (degrees): {angles}")
 print(f"Torques: {[torques[i] for i in best_indices]}")
